@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EikeLabs Chat 💜</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #090914;
+  color: #f2efff;
+}
+.app { display: flex; height: 100vh; }
+.sidebar {
+  width: 235px;
+  background: #111121;
+  padding: 22px 14px;
+  border-right: 1px solid #292344;
+}
+.logo { font-size: 23px; font-weight: bold; color: #c084fc; margin-bottom: 32px; }
+.logo span { color: white; }
+.section { color: #9691b7; font-size: 12px; margin: 24px 8px 10px; }
+.channel {
+  display: block; padding: 12px; border-radius: 9px;
+  color: #c9c4e8; cursor: pointer; margin: 4px 0;
+}
+.channel:hover, .channel.active { background: #48219a; color: white; }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+header {
+  padding: 20px; border-bottom: 1px solid #292344;
+  font-size: 19px; font-weight: bold;
+}
+header span { color: #c084fc; }
+.welcome {
+  margin: 20px; padding: 20px; border-radius: 14px;
+  background: linear-gradient(120deg,#25134b,#17172d);
+  border: 1px solid #39305b;
+}
+.welcome h3 { margin-top: 0; }
+.welcome p { color: #c5bddf; margin-bottom: 0; line-height: 1.5; }
+.messages { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
+.message { display: flex; gap: 12px; margin: 20px 0; }
+.avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: #5423a1; display: grid; place-items: center;
+  font-size: 23px; flex-shrink: 0;
+}
+.name { color: #c084fc; font-weight: bold; }
+.time { color: #77738f; font-size: 11px; margin-left: 8px; }
+.content { margin-top: 7px; line-height: 1.5; overflow-wrap: anywhere; }
+.composer {
+  display: flex; gap: 10px; padding: 15px;
+  border-top: 1px solid #292344;
+}
+input {
+  min-width: 0; flex: 1; padding: 15px;
+  border: 1px solid #393052; border-radius: 12px;
+  background: #171629; color: white; font-size: 15px;
+  outline: none;
+}
+input:focus { border-color: #a855f7; }
+button {
+  border: 0; border-radius: 12px; padding: 0 20px;
+  background: #842ee8; color: white; font-size: 20px;
+  cursor: pointer;
+}
+button:hover { background: #a855f7; }
+.note { text-align: center; font-size: 11px; color: #77738f; padding: 0 12px 10px; }
+@media(max-width:600px) {
+  .sidebar { width: 100px; padding: 14px 8px; }
+  .logo { font-size: 15px; overflow-wrap: anywhere; }
+  .section { font-size: 10px; }
+  .channel { padding: 10px 5px; font-size: 12px; }
+  header { padding: 16px 10px; font-size: 16px; }
+  .welcome { margin: 12px; padding: 14px; }
+  .messages { padding: 0 12px 12px; }
+  .composer { padding: 10px; }
+  button { padding: 0 14px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">💜 EikeLabs <span>Chat</span></div>
+    <div class="section">CANAIS DE TEXTO</div>
+    <div class="channel active" data-channel="geral"># geral</div>
+    <div class="channel" data-channel="jogos"># jogos</div>
+    <div class="channel" data-channel="memes"># memes</div>
+    <div class="channel" data-channel="tecnologia"># tecnologia</div>
+    <div class="channel" data-channel="projetos"># projetos</div>
+    <div class="section">SUA COMUNIDADE</div>
+    <div style="padding:10px;color:#c084fc">✦ Criada com carinho!</div>
+  </aside>
+  <main class="main">
+    <header><span>#</span> <b id="channelTitle">geral</b></header>
+    <div class="welcome">
+      <h3>🎉 Bem-vindo ao EikeLabs Chat! 💜</h3>
+      <p>Um lugar para conversar, jogar e compartilhar ideias.</p>
+      <p>✨ Seja respeitoso e divirta-se!</p>
+    </div>
+    <div class="messages" id="messages" aria-live="polite"></div>
+    <div class="composer">
+      <input id="messageInput" maxlength="500" placeholder="Digite sua mensagem..." aria-label="Sua mensagem">
+      <button id="sendButton" aria-label="Enviar mensagem">➤</button>
+    </div>
+    <div class="note">Protótipo local: as mensagens ficam somente neste navegador.</div>
+  </main>
+</div>
+<script>
+const messages = document.getElementById('messages');
+const input = document.getElementById('messageInput');
+const title = document.getElementById('channelTitle');
+let channel = 'geral';
+const history = {};
+function addMessage(name, text, mine) {
+  const item = document.createElement('div');
+  item.className = 'message';
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = mine ? '😎' : '💜';
+  const body = document.createElement('div');
+  const heading = document.createElement('div');
+  const username = document.createElement('span');
+  username.className = 'name';
+  username.textContent = name;
+  const time = document.createElement('span');
+  time.className = 'time';
+  time.textContent = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  heading.append(username, time);
+  const content = document.createElement('div');
+  content.className = 'content';
+  content.textContent = text;
+  body.append(heading, content);
+  item.append(avatar, body);
+  messages.append(item);
+  messages.scrollTop = messages.scrollHeight;
+}
+function render() {
+  messages.replaceChildren();
+  (history[channel] || []).forEach(m => addMessage(m.name,m.text,m.mine));
+  if (!history[channel] || history[channel].length === 0) {
+    addMessage('EikeLabs','Opa! Bem-vindo ao canal #'+channel+'! 💜',false);
+    addMessage('Sistema','Escreva uma mensagem abaixo para testar o chat.',false);
+  }
+}
+function send() {
+  const text = input.value.trim();
+  if (!text) return;
+  if (!history[channel]) history[channel] = [];
+  history[channel].push({name:'Você',text,mine:true});
+  input.value = '';
+  render();
+  input.focus();
+}
+document.getElementById('sendButton').addEventListener('click',send);
+input.addEventListener('keydown',e => { if(e.key === 'Enter') send(); });
+document.querySelectorAll('.channel').forEach(el => {
+  el.addEventListener('click',() => {
+    document.querySelectorAll('.channel').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    channel = el.dataset.channel;
+    title.textContent = channel;
+    render();
+  });
+});
+render();
+</script>
+</body>
+</html>
